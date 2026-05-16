@@ -2,88 +2,184 @@
 
 ## 项目说明
 
-这是一个基于深度学习的智能网球动作分析系统，参考 NousResearch Hermes Agent 的设计理念实现。
+这是一个基于深度学习的智能网球动作分析系统，参考 NousResearch Hermes Agent 的设计理念实现，采用 FastAPI 生产级框架部署。
 
-## 核心功能
+## 技术架构
 
-### 1. 高级姿态识别
+### 核心模块
+
+#### 1. 高级姿态识别 (`pose_analyzer.py`)
 * MediaPipe 人体33个关键点识别
-* 精准的肩膀、髋部、膝盖、肘部角度计算
+* 3D 角度计算（肩膀、髋部、膝盖、肘部）
 * 时序动作特征提取
 
-### 2. 深度学习动作分类
-* LSTM + Attention 架构
-* 7种网球动作类型识别：正手、反手、发球、截击、高压球等
+#### 2. 深度学习动作分类 (`motion_classifier.py`)
+* LSTM + Attention 架构（PyTorch）
+* 7种网球动作类型识别
 * 动作质量自动评分
-* 阶段分析（准备、击球、随挥）
 
-### 3. 智能 AI 反馈系统
-* 优点分析与改进建议
-* 分优先级反馈（🔴紧急、🟡重要、🟢建议）
+#### 3. 智能 AI 反馈系统 (`feedback_generator.py`)
+* 分优先级反馈机制
 * 个性化训练建议
-* 基于运动生物力学的专业评估
+* 运动生物力学分析
 
-### 4. Streamlit 可视化界面
-* 视频上传与播放
-* 姿态可视化预览
-* 动作指标曲线图（肩部、髋部、膝盖、速度）
-* 完整的 AI 分析报告
+#### 4. FastAPI 生产级后端 (`api.py`)
+* RESTful API 设计
+* 异步任务队列
+* 实时任务状态轮询
+* 健康检查和就绪检查
 
-## 技术栈
+## 生产级特性
 
-| 模块 | 技术 |
-| --- | --- |
-| Web 框架 | Streamlit |
-| 姿态识别 | MediaPipe Pose |
-| 视觉处理 | OpenCV |
-| 深度学习 | PyTorch |
-| 机器学习 | scikit-learn, transformers |
-| 数据分析 | NumPy, Pandas, Matplotlib |
+### FastAPI 生产部署最佳实践
+
+1. **多 Worker 架构**
+   - Gunicorn + Uvicorn Workers
+   - CPU 核心数 × 2 + 1 workers
+   - 自动 worker 重启防止内存泄漏
+
+2. **异步任务处理**
+   - BackgroundTasks 处理视频分析
+   - 非阻塞 I/O 操作
+   - 任务状态实时跟踪
+
+3. **安全配置**
+   - CORS 中间件
+   - 输入验证（Pydantic）
+   - 文件类型检查
+
+4. **性能优化**
+   - uvloop 事件循环
+   - httptools HTTP 解析
+   - Keep-Alive 连接复用
+
+5. **监控和日志**
+   - 健康检查端点
+   - 访问日志（包含响应时间）
+   - 错误追踪
 
 ## 安装与运行
 
+### 方式一：快速启动（开发环境）
+
 ```bash
-# 1. 安装依赖
+# 安装依赖
 pip install -r requirements.txt
 
-# 2. 运行应用
-streamlit run app.py
+# 启动服务（Uvicorn）
+uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 ```
+
+### 方式二：生产环境（Gunicorn）
+
+```bash
+# 使用部署脚本
+chmod +x deploy.sh
+./deploy.sh production
+```
+
+或手动启动：
+
+```bash
+# 安装 Gunicorn
+pip install gunicorn
+
+# 使用配置文件启动
+gunicorn -c gunicorn_config.py api:app
+```
+
+## API 端点
+
+### 健康检查
+
+```bash
+# 健康检查
+GET /health
+
+# 就绪检查
+GET /readiness
+```
+
+### 视频分析
+
+```bash
+# 上传视频
+POST /upload
+Content-Type: multipart/form-data
+
+# 查询任务状态
+GET /tasks/{task_id}
+
+# 列出所有任务
+GET /tasks?status=completed&limit=10
+
+# 删除任务
+DELETE /tasks/{task_id}
+```
+
+### API 文档
+
+启动服务后访问：
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## 前端界面
+
+打开 `frontend/index.html` 文件即可使用现代美观的前端界面。
+
+### 前端特性
+- 拖拽上传
+- 实时进度条
+- 任务状态轮询
+- 美观的分析报告展示
+- 响应式设计
 
 ## 项目结构
 
 ```
 /workspace/
-├── app.py                  # 主应用入口
-├── pose_analyzer.py        # 高级姿态分析引擎
-├── motion_classifier.py    # 深度学习动作分类器
-├── feedback_generator.py   # 智能反馈系统
-├── requirements.txt        # Python 依赖
-├── test_system.py          # 系统测试脚本
-└── README.md               # 项目文档
+├── api.py                    # FastAPI 后端服务
+├── pose_analyzer.py          # 高级姿态分析引擎
+├── motion_classifier.py      # 深度学习动作分类器
+├── feedback_generator.py      # 智能反馈系统
+├── gunicorn_config.py        # Gunicorn 生产配置
+├── deploy.sh                 # 部署脚本
+├── requirements.txt          # Python 依赖
+├── frontend/
+│   └── index.html           # 前端界面
+├── test_api.py              # API 测试脚本
+├── test_system.py           # 系统测试脚本
+└── README.md                # 项目文档
 ```
-
-## 使用说明
-
-1. 启动应用后，在浏览器中访问 `http://localhost:8501`
-2. 上传你的网球训练视频（支持 mp4, mov, avi, mkv 格式）
-3. 调整采样率参数（越小越精确，处理时间越长）
-4. 等待 AI 分析完成
-5. 查看四个标签页的完整分析报告：
-   - 📊 分析结果：动作类型、评分、置信度
-   - 🎯 姿态可视化：带关键点标注的帧
-   - 📈 动作指标：时序曲线图
-   - 📚 AI 反馈报告：完整的改进建议和训练计划
 
 ## 核心改进（v2.0）
 
-参考 Hermes Agent 的设计理念进行了全面升级：
+参考 Hermes Agent 和 FastAPI 生产部署最佳实践：
 
-1. **从规则到深度学习**：简单的肩膀距离判断 → 基于 LSTM+Attention 的时序分类
-2. **智能反馈系统**：固定提示 → 基于知识库和动作质量的个性化反馈
-3. **多维度分析**：单一指标 → 肩、髋、膝、肘、速度、重心等综合评估
-4. **可视化增强**：基础预览 → 带曲线图和分阶段分析的专业界面
+1. **从 Streamlit 到 FastAPI**：交互式原型 → 生产级 API 服务
+2. **深度学习集成**：规则判断 → LSTM+Attention 神经网络
+3. **异步任务队列**：同步处理 → BackgroundTasks 异步分析
+4. **多 Worker 部署**：单进程 → Gunicorn 多进程架构
+5. **智能反馈系统**：固定提示 → 基于知识库的个性化建议
+
+## 技术栈
+
+| 模块 | 技术 |
+| --- | --- |
+| Web 框架 | FastAPI + Uvicorn + Gunicorn |
+| 姿态识别 | MediaPipe Pose |
+| 深度学习 | PyTorch (LSTM + Attention) |
+| 机器学习 | scikit-learn |
+| 数据处理 | NumPy, Pandas |
+| 前端 | HTML5 + JavaScript (原生) |
 
 ## 许可证
 
 Apache 2.0 License
+
+---
+
+**参考来源**：
+- [FastAPI 生产部署最佳实践](https://render.com/articles/fastapi-production-deployment-best-practices)
+- [NousResearch Hermes Agent v2026.5.7](https://github.com/NousResearch/hermes-agent/releases/tag/v2026.5.7)
+- [Celery 视频处理架构](https://mixpeek.com/blog/using-celery-to-process-thousands-of-videos)
