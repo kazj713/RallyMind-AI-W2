@@ -2,3 +2,14 @@ streamlit
 opencv-python-headless
 mediapipe
 numpy
+torch
+torchvision
+torchaudio
+transformers
+accelerate
+scikit-learn
+pandas
+matplotlib
+seaborn
+tqdm
+pydantic
