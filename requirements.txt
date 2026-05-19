@@ -1,32 +1,32 @@
 # Web框架
-fastapi==0.115.0
-uvicorn[standard]==0.32.0
-gunicorn==23.0.0
-starlette==0.41.0
+fastapi
+uvicorn[standard]
+gunicorn
+starlette
 
 # 视频处理
-opencv-python-headless==4.13.0.92
-mediapipe==0.10.35
+opencv-python-headless
+mediapipe
 
 # 数据处理
-numpy==2.4.5
-pandas==3.0.3
+numpy
+pandas
 
 # 深度学习
-torch==2.12.0
-torchvision==0.27.0
-torchaudio==2.12.0
-transformers==5.8.1
-accelerate==1.13.0
+torch
+torchvision
+torchaudio
+transformers
+accelerate
 
 # 机器学习
-scikit-learn==1.8.0
+scikit-learn
 
 # 可视化
-matplotlib==3.10.9
-seaborn==0.13.2
+matplotlib
+seaborn
 
 # 工具
-tqdm==4.67.3
-pydantic==2.13.4
-python-multipart==0.0.28
+tqdm
+pydantic
+python-multipart
